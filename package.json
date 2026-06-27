@@ -1,0 +1,27 @@
+{
+  "name": "backend-project",
+  "version": "1.0.0",
+  "description": "a backend project using express by hitesh sir",
+  "keywords": [
+    "backend",
+    "youtube-clone"
+  ],
+  "homepage": "https://github.com/57-ayush/backend-project#readme",
+  "bugs": {
+    "url": "https://github.com/57-ayush/backend-project/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/57-ayush/backend-project.git"
+  },
+  "license": "ISC",
+  "author": "Ayush Kashyap",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
