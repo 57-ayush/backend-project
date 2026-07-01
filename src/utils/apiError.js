@@ -12,3 +12,5 @@ class apiError extends Error{
         this.errors=errors
     }
 }
+
+export {apiError}
