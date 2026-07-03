@@ -4,6 +4,22 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 
+const generateAccessTokenAndRefreshToken= async(userId)=>{
+    try {
+        const user= await User.findById(userId)
+        const accessToken=user.generateAccessToken()
+        const refreshToken=user.generaterRefreshToken()
+        
+        user.refreshToken=refreshToken
+        await user.save({ validateBeforeSave:false })
+
+        return {accessToken, refreshToken}
+
+    } catch (error) {
+        throw new apiError(500,"something went wrong while generating tokens")
+    }
+}
+
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, username, password, email } = req.body;
     console.log("FILES RECEIVED:", req.files);
@@ -71,7 +87,52 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req,res)=>{
+    const {username,email,password}= req.body
 
+    if(!username && !email){
+        throw new apiError(400,"username or email required")
+    }
+
+    const user=User.findOne({
+        $or:[{email},{username}]
+    })
+
+    if(!user){
+        throw new apiError(404,"user does not exist")
+    }
+    const isPasswordValid= await user.isPasswordValid(password)
+    
+    if(!isPasswordValid){
+        throw new apiError(401,"please enter correct user credentials")
+
+    }
+
+    const {accessToken, refreshToken}= await generateAccessTokenAndRefreshToken(user._id)
+
+    const loggedInUser= await user.findById(user._id).select(
+        "-password -refreshtoken"
+    )
+    const options={
+        httpOnly: true,
+        secure:true
+    }
+    return res
+    .status(200)
+    .cookie("accessToken",accessToken,options)
+    .cookie("refreshToken",refreshToken,options)
+    .json(
+        new apiResponse(
+            200,
+            {
+                user: loggedInUser,accessToken,refreshToken
+            },
+            "user logged in successfully"
+        )
+    )
 })
 
-export { registerUser };
+export { 
+    registerUser,
+    loginUser
+
+ };
